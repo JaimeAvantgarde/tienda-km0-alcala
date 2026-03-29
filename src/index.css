@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-tierra-50: #f8fafc;
+  --color-tierra-100: #f1f5f9;
+  --color-tierra-200: #e2e8f0;
+  --color-tierra-300: #cbd5e1;
+  --color-tierra-400: #94a3b8;
+  --color-tierra-500: #64748b;
+  --color-tierra-600: #475569;
+  --color-tierra-700: #334155;
+  --color-tierra-800: #1e293b;
+  --color-tierra-900: #0f172a;
+
+  --color-oliva-50: #f4f5ef;
+  --color-oliva-100: #e4e8d6;
+  --color-oliva-200: #c8d1ab;
+  --color-oliva-300: #a3b477;
+  --color-oliva-400: #879a55;
+  --color-oliva-500: #6b7d3a;
+  --color-oliva-600: #5a6a31;
+  --color-oliva-700: #4a5729;
+  --color-oliva-800: #3b4622;
+  --color-oliva-900: #2d361a;
+
+  --color-crema: #f8fafc;
+  --color-crema-dark: #f1f5f9;
+
+  --color-terracota-50: #f4f5ef;
+  --color-terracota-100: #e4e8d6;
+  --color-terracota-200: #c8d1ab;
+  --color-terracota-300: #a3b477;
+  --color-terracota-400: #879a55;
+  --color-terracota-500: #6b7d3a;
+  --color-terracota-600: #5a6a31;
+  --color-terracota-700: #4a5729;
+  --color-terracota-800: #3b4622;
+  --color-terracota-900: #2d361a;
+
+  --font-serif: 'Montserrat', system-ui, sans-serif;
+  --font-sans: 'Nunito', system-ui, sans-serif;
+}
+
+/* Base styles */
+body {
+  font-family: var(--font-sans);
+  color: #334155;
+  background-color: var(--color-crema);
+  margin: 0;
+}
+
+/* Scroll animations */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* WhatsApp pulse */
+@keyframes whatsapp-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+  70% { box-shadow: 0 0 0 14px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+.whatsapp-pulse {
+  animation: whatsapp-pulse 2s infinite;
+}
+
+/* Paper texture overlay */
+.paper-texture {
+  position: relative;
+}
+.paper-texture::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
