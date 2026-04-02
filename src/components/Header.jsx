@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const navLinks = [
   { to: '/', label: 'Inicio' },
@@ -11,13 +11,21 @@ const navLinks = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogoClick = (e) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 z-50 bg-white shadow-md border-b-2 border-oliva-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 sm:h-24">
           {/* Logo */}
-          <Link to="/" className="flex items-center no-underline shrink-0">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center no-underline shrink-0">
             <img src="/logo.png" alt="Km0 Productos de la Tierra" className="h-16 sm:h-20 w-auto" />
           </Link>
 

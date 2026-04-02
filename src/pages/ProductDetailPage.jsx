@@ -1,6 +1,83 @@
+import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import ProductCard from '../components/ProductCard';
+
+function ProductGallery({ images, name }) {
+  const [current, setCurrent] = useState(0);
+
+  if (images.length === 0) {
+    return (
+      <div>
+        <div className="rounded-2xl overflow-hidden aspect-square bg-tierra-100 flex items-center justify-center">
+          <svg className="w-24 h-24 text-tierra-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
+  const prev = () => setCurrent(c => (c === 0 ? images.length - 1 : c - 1));
+  const next = () => setCurrent(c => (c === images.length - 1 ? 0 : c + 1));
+
+  return (
+    <div>
+      {/* Imagen principal */}
+      <div className="relative rounded-2xl overflow-hidden aspect-square group bg-gray-50">
+        <img src={images[current].data} alt={`${name} ${current + 1}`} className="w-full h-full object-contain" />
+
+        {images.length > 1 && (
+          <>
+            {/* Flechas */}
+            <button
+              onClick={prev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* Puntos indicadores */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {images.map((_, i) => (
+                <button key={i} onClick={() => setCurrent(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${i === current ? 'bg-white' : 'bg-white/40'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnails */}
+      {images.length > 1 && (
+        <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+          {images.map((img, i) => (
+            <button
+              key={img.id}
+              onClick={() => setCurrent(i)}
+              className={`w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-colors ${
+                i === current ? 'border-oliva-500' : 'border-gray-200 hover:border-gray-400'
+              }`}
+            >
+              <img src={img.data} alt={`${name} ${i + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -42,35 +119,12 @@ export default function ProductDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Images */}
-          <div>
-            <div className="rounded-2xl overflow-hidden aspect-square">
-              {productImages.length > 0 ? (
-                <img src={productImages[0].data} alt={product.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-tierra-100 flex items-center justify-center">
-                  <svg className="w-24 h-24 text-tierra-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              )}
-            </div>
-
-            {/* Thumbnail gallery */}
-            {productImages.length > 1 && (
-              <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
-                {productImages.map((img, i) => (
-                  <div key={img.id} className="w-20 h-20 rounded-lg overflow-hidden shrink-0 border-2 border-tierra-200">
-                    <img src={img.data} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductGallery images={productImages} name={product.name} />
 
           {/* Info */}
           <div>
             {category && (
-              <span className="inline-block bg-tierra-100 text-tierra-700 text-sm font-medium px-3 py-1 rounded-full mb-4">
+              <span className="inline-block bg-oliva-100 text-oliva-700 text-sm font-medium px-3 py-1 rounded-full mb-4">
                 {category.name}
               </span>
             )}
@@ -79,9 +133,13 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
 
-            <p className="text-tierra-600 text-lg leading-relaxed mb-8">
+            <p className="text-tierra-600 text-lg leading-relaxed mb-4">
               {product.shortDescription}
             </p>
+
+            {product.price != null && (
+              <p className="text-2xl font-medium text-tierra-800 mb-8">{product.price.toFixed(2)}<span className="text-base ml-0.5">&euro;</span></p>
+            )}
 
             {/* Description */}
             <div className="prose prose-tierra max-w-none mb-8">
@@ -95,7 +153,7 @@ export default function ProductDetailPage() {
             <div className="bg-white rounded-xl p-6 space-y-4 border border-tierra-100">
               {product.producer && (
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-oliva-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-oliva-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   <div>
@@ -106,7 +164,7 @@ export default function ProductDetailPage() {
               )}
               {product.origin && (
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-oliva-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-oliva-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -118,7 +176,7 @@ export default function ProductDetailPage() {
               )}
               {product.tradition && (
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-oliva-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-5 h-5 text-oliva-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                   <div>

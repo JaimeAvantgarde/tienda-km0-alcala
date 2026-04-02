@@ -19,7 +19,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-tierra-800 to-oliva-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-oliva-700 to-oliva-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo */}
@@ -60,7 +60,7 @@ export default function LoginPage() {
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-tierra-700 hover:bg-tierra-800 text-white rounded-lg font-medium transition-colors"
+              className="w-full py-3 bg-oliva-500 hover:bg-oliva-600 text-white rounded-lg font-medium transition-colors"
             >
               Iniciar sesión
             </button>

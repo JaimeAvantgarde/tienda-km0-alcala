@@ -61,6 +61,15 @@ export function DataProvider({ children }) {
     setProducts(prev => prev.filter(p => p.id !== id));
   }, []);
 
+  const reorderProducts = useCallback((fromIndex, toIndex) => {
+    setProducts(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return updated;
+    });
+  }, []);
+
   const addCategory = useCallback((category) => {
     const newCat = { ...category, id: 'cat_' + Date.now() };
     setCategories(prev => [...prev, newCat]);
@@ -125,6 +134,7 @@ export function DataProvider({ children }) {
     addProduct,
     updateProduct,
     deleteProduct,
+    reorderProducts,
     addCategory,
     updateCategory,
     deleteCategory,

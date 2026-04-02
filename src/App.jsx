@@ -12,7 +12,6 @@ import LoginPage from './pages/admin/LoginPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import ProductsAdmin from './pages/admin/ProductsAdmin';
 import CategoriesAdmin from './pages/admin/CategoriesAdmin';
-import ImagesAdmin from './pages/admin/ImagesAdmin';
 import SettingsAdmin from './pages/admin/SettingsAdmin';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -40,7 +39,6 @@ export default function App() {
           <Route path="/admin" element={<AdminLayout><DashboardPage /></AdminLayout>} />
           <Route path="/admin/productos" element={<AdminLayout><ProductsAdmin /></AdminLayout>} />
           <Route path="/admin/categorias" element={<AdminLayout><CategoriesAdmin /></AdminLayout>} />
-          <Route path="/admin/imagenes" element={<AdminLayout><ImagesAdmin /></AdminLayout>} />
           <Route path="/admin/configuracion" element={<AdminLayout><SettingsAdmin /></AdminLayout>} />
         </Routes>
       ) : (

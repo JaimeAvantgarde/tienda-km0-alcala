@@ -28,7 +28,7 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             to="/productos"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-terracota-500 hover:bg-terracota-600 text-white rounded-lg font-medium text-lg transition-all hover:shadow-lg hover:-translate-y-0.5 no-underline"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-oliva-500 hover:bg-oliva-600 text-white rounded-lg font-medium text-lg transition-colors hover:shadow-lg no-underline"
           >
             Descubrir Productos
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -44,12 +44,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Bottom wave */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path d="M0 40C240 80 480 0 720 40C960 80 1200 0 1440 40V80H0V40Z" fill="var(--color-crema)" />
-        </svg>
-      </div>
     </section>
   );
 }

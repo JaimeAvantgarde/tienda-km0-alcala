@@ -83,7 +83,9 @@ body {
   pointer-events: none;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
 }
+

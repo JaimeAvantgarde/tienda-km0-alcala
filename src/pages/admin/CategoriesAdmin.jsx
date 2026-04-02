@@ -1,33 +1,8 @@
 import { useState, useRef } from 'react';
 import { useData } from '../../context/DataContext';
+import ImageCropper from '../../components/admin/ImageCropper';
 
 const emptyCategory = { name: '', description: '', icon: '', gradient: '', order: 1, imageId: null };
-
-function resizeAndUpload(file, addImage) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxSize = 800;
-        let { width, height } = img;
-        if (width > maxSize || height > maxSize) {
-          if (width > height) { height = (height / width) * maxSize; width = maxSize; }
-          else { width = (width / height) * maxSize; height = maxSize; }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        const data = canvas.toDataURL('image/jpeg', 0.85);
-        const newImg = addImage({ name: file.name, data });
-        resolve(newImg.id);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
 
 export default function CategoriesAdmin() {
   const { categories, products, addImage, addCategory, updateCategory, deleteCategory, getImageById } = useData();
@@ -35,6 +10,7 @@ export default function CategoriesAdmin() {
   const [form, setForm] = useState(emptyCategory);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [cropData, setCropData] = useState(null);
   const fileRef = useRef();
 
   const startCreate = () => { setForm({ ...emptyCategory, order: categories.length + 1 }); setEditing('new'); };
@@ -58,23 +34,28 @@ export default function CategoriesAdmin() {
     setConfirmDelete(null);
   };
 
-  const handlePhotoDrop = async (e) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const newId = await resizeAndUpload(file, addImage);
-      setForm(prev => ({ ...prev, imageId: newId }));
-    }
+  const openCropFromFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => setCropData({ src: e.target.result, name: file.name });
+    reader.readAsDataURL(file);
   };
 
-  const handlePhotoSelect = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const newId = await resizeAndUpload(file, addImage);
-      setForm(prev => ({ ...prev, imageId: newId }));
-    }
+  const handlePhotoDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    openCropFromFile(e.dataTransfer.files[0]);
+  };
+
+  const handlePhotoSelect = (e) => {
+    openCropFromFile(e.target.files[0]);
     e.target.value = '';
+  };
+
+  const handleCropSave = ({ name, data }) => {
+    const newImg = addImage({ name, data });
+    setForm(prev => ({ ...prev, imageId: newImg.id }));
+    setCropData(null);
   };
 
   // ─── FORM VIEW ───
@@ -98,36 +79,38 @@ export default function CategoriesAdmin() {
           {/* Foto de la categoría */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Foto de la categoría</label>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
 
-            {currentImage ? (
-              <div className="relative group w-full max-w-xs aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 mb-3">
-                <img src={currentImage.data} alt="Foto categoría" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setForm({ ...form, imageId: null })}
-                  className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+            <div className="flex gap-3 flex-wrap">
+              {currentImage && (
+                <div className="relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200">
+                  <img src={currentImage.data} alt="Foto categoría" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, imageId: null })}
+                    className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handlePhotoDrop}
+                onClick={() => fileRef.current?.click()}
+                className={`w-28 h-28 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                  dragOver ? 'border-oliva-400 bg-oliva-50' : 'border-gray-300 hover:border-oliva-400 hover:bg-gray-50'
+                }`}
+              >
+                <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-xs text-gray-400 mt-1">{currentImage ? 'Cambiar' : 'Añadir'}</span>
               </div>
-            ) : null}
-
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handlePhotoDrop}
-              onClick={() => fileRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors max-w-xs ${
-                dragOver ? 'border-terracota-400 bg-terracota-50' : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
-              <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              <p className="text-sm text-gray-500">{currentImage ? 'Cambiar foto' : 'Subir foto'}</p>
             </div>
           </div>
 
@@ -150,7 +133,7 @@ export default function CategoriesAdmin() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" className="px-6 py-2 bg-tierra-700 hover:bg-tierra-800 text-white rounded-lg font-medium transition-colors">
+            <button type="submit" className="px-6 py-2 bg-oliva-500 hover:bg-oliva-600 text-white rounded-lg font-medium transition-colors">
               {editing === 'new' ? 'Crear' : 'Guardar'}
             </button>
             <button type="button" onClick={() => setEditing(null)} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
@@ -158,6 +141,15 @@ export default function CategoriesAdmin() {
             </button>
           </div>
         </form>
+
+        {cropData && (
+          <ImageCropper
+            imageSrc={cropData.src}
+            fileName={cropData.name}
+            onSave={handleCropSave}
+            onCancel={() => setCropData(null)}
+          />
+        )}
       </div>
     );
   }
@@ -167,7 +159,7 @@ export default function CategoriesAdmin() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <p className="text-sm text-gray-500">{categories.length} categorías</p>
-        <button onClick={startCreate} className="px-4 py-2 bg-tierra-700 hover:bg-tierra-800 text-white rounded-lg text-sm font-medium transition-colors">
+        <button onClick={startCreate} className="px-4 py-2 bg-oliva-500 hover:bg-oliva-600 text-white rounded-lg text-sm font-medium transition-colors">
           + Añadir Categoría
         </button>
       </div>

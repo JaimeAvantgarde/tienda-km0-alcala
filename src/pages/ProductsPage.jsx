@@ -27,7 +27,7 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-crema">
       {/* Header */}
-      <div className="bg-gradient-to-br from-tierra-800 to-oliva-800 text-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-br from-oliva-700 to-oliva-900 text-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">
             Nuestros Productos
@@ -61,7 +61,7 @@ export default function ProductsPage() {
             onClick={() => setSearchParams({})}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeCategory === 'all'
-                ? 'bg-tierra-700 text-white'
+                ? 'bg-oliva-500 text-white'
                 : 'bg-white text-tierra-600 hover:bg-tierra-100 border border-tierra-200'
             }`}
           >
@@ -73,11 +73,11 @@ export default function ProductsPage() {
               onClick={() => setSearchParams({ categoria: cat.id })}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat.id
-                  ? 'bg-tierra-700 text-white'
+                  ? 'bg-oliva-500 text-white'
                   : 'bg-white text-tierra-600 hover:bg-tierra-100 border border-tierra-200'
               }`}
             >
-              {cat.icon} {cat.name}
+              {cat.name}
             </button>
           ))}
         </div>
