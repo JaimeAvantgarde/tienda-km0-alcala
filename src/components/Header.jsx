@@ -38,16 +38,13 @@ export default function Header() {
                   key={link.to}
                   to={link.to}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`relative px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors no-underline ${
+                  className={`px-5 py-2.5 rounded-lg text-sm transition-colors no-underline ${
                     isActive
-                      ? 'text-oliva-700 bg-oliva-100'
-                      : 'text-tierra-600 hover:bg-gray-50 hover:text-tierra-800'
+                      ? 'text-oliva-700 bg-oliva-100 font-bold'
+                      : 'text-tierra-600 hover:bg-gray-50 hover:text-tierra-800 font-semibold'
                   }`}
                 >
                   {link.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-oliva-600" />
-                  )}
                 </Link>
               );
             })}
