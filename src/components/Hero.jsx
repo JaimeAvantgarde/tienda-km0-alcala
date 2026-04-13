@@ -11,10 +11,6 @@ export default function Hero() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <img src="/logo-white.png" alt="Km0 Logo" className="h-24 sm:h-28 w-auto mx-auto" />
-        </div>
-
         <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.1] mb-6">
           Sabores de{' '}
           <span className="text-oliva-300 italic">nuestra tierra</span>

@@ -26,7 +26,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-20 sm:h-24">
           {/* Logo */}
           <Link to="/" onClick={handleLogoClick} className="flex items-center no-underline shrink-0">
-            <img src="/logo.png" alt="Km0 Productos de la Tierra" className="h-16 sm:h-20 w-auto" />
+            <img src="/logo-km0.png" alt="Km0 Productos de la Tierra" className="h-16 sm:h-20 w-auto" />
           </Link>
 
           {/* Nav desktop */}

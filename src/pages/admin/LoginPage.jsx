@@ -24,7 +24,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="Km0 Logo" className="h-20 w-auto mx-auto mb-4" />
+            <img src="/logo-km0.png" alt="Km0 Logo" className="h-20 w-auto mx-auto mb-4" />
             <h1 className="font-serif text-2xl font-bold text-tierra-800">Panel de Control</h1>
             <p className="text-tierra-500 text-sm mt-1">Tienda Km0 Alcalá la Real</p>
           </div>

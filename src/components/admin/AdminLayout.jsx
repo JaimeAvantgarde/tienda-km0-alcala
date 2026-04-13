@@ -28,7 +28,7 @@ export default function AdminLayout({ children }) {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className="flex items-center justify-center px-6 py-6 border-b border-oliva-700">
-          <img src="/logo-white.png" alt="Km0 Logo" className="h-16 w-auto" />
+          <img src="/logo-km0.png" alt="Km0 Logo" className="h-16 w-auto" />
         </div>
 
         <nav className="px-3 py-4 space-y-1">

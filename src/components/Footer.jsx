@@ -11,7 +11,7 @@ export default function Footer() {
           {/* Logo & description */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <img src="/logo-white.png" alt="Km0 Logo" className="h-14 w-auto" />
+              <img src="/logo-km0.png" alt="Km0 Logo" className="h-14 w-auto brightness-0 invert" />
             </div>
             <p className="text-oliva-200 text-sm leading-relaxed">
               Productos locales de kilómetro cero. Lo mejor de la Sierra Sur de Jaén
