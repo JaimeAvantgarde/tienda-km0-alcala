@@ -1,4 +1,11 @@
+import { useSEO } from '../hooks/useSEO';
+
 export default function AboutPage() {
+  useSEO({
+    title: 'Nuestra Tienda',
+    description: 'Tienda Km0 nace para dar visibilidad a los productos locales y al trabajo de los pequeños productores de Alcalá la Real. Aceite, dulces, conservas, souvenirs y más.',
+    path: '/sobre-nosotros',
+  });
   return (
     <div className="min-h-screen bg-crema">
       {/* Hero */}

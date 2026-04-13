@@ -10,6 +10,8 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import NotFoundPage from './pages/NotFoundPage';
+import PrivacyPage from './pages/PrivacyPage';
+import CookiesPage from './pages/CookiesPage';
 import LoginPage from './pages/admin/LoginPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import ProductsAdmin from './pages/admin/ProductsAdmin';
@@ -83,6 +85,8 @@ export default function App() {
           <Route path="/producto/:id" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
           <Route path="/sobre-nosotros" element={<PublicLayout><AboutPage /></PublicLayout>} />
           <Route path="/contacto" element={<PublicLayout><ContactPage /></PublicLayout>} />
+          <Route path="/privacidad" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
+          <Route path="/cookies" element={<PublicLayout><CookiesPage /></PublicLayout>} />
           <Route path="*" element={<PublicLayout><NotFoundPage /></PublicLayout>} />
         </Routes>
       )}

@@ -1,6 +1,12 @@
 import ContactSection from '../components/ContactSection';
+import { useSEO } from '../hooks/useSEO';
 
 export default function ContactPage() {
+  useSEO({
+    title: 'Contacto',
+    description: 'Contacta con Tienda Km0 Alcalá la Real. Escríbenos por teléfono, WhatsApp o email. Estamos en Alcalá la Real, Sierra Sur de Jaén.',
+    path: '/contacto',
+  });
   return (
     <div className="min-h-screen bg-crema">
       {/* Header */}

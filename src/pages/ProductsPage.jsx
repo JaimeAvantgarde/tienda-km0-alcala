@@ -1,12 +1,21 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useSEO } from '../hooks/useSEO';
 import ProductCard from '../components/ProductCard';
 
 export default function ProductsPage() {
   const { visibleProducts, categories } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get('categoria') || 'all';
+  const activeCategoryObj = categories.find(c => c.id === activeCategory);
+  useSEO({
+    title: activeCategoryObj ? activeCategoryObj.name : 'Productos',
+    description: activeCategoryObj
+      ? `${activeCategoryObj.description} Productos artesanales de Alcalá la Real, Sierra Sur de Jaén.`
+      : 'Catálogo completo de productos locales de Alcalá la Real: aceite de oliva, quesos, embutidos, dulces, conservas y souvenirs de la Sierra Sur de Jaén.',
+    path: '/productos',
+  });
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {

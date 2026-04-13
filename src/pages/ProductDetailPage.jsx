@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 import { useData } from '../context/DataContext';
 import ProductCard from '../components/ProductCard';
 
@@ -88,6 +89,13 @@ export default function ProductDetailPage() {
 
   const category = getCategoryById(product.categoryId);
   const productImages = (product.imageIds || []).map(getImageById).filter(Boolean);
+  const mainImage = productImages[0];
+  useSEO({
+    title: product.name,
+    description: `${product.shortDescription} ${product.producer ? `Por ${product.producer}.` : ''} ${product.origin ? `Origen: ${product.origin}.` : ''} Producto artesanal de Alcalá la Real, Sierra Sur de Jaén.`.trim(),
+    image: mainImage?.url || undefined,
+    path: `/producto/${product.id}`,
+  });
   const relatedProducts = visibleProducts
     .filter(p => p.categoryId === product.categoryId && p.id !== product.id)
     .slice(0, 3);

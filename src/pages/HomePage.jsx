@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useSEO } from '../hooks/useSEO';
 import Hero from '../components/Hero';
 import CategoryGrid from '../components/CategoryGrid';
 import ProductCard from '../components/ProductCard';
 import ContactSection from '../components/ContactSection';
 
 export default function HomePage() {
+  useSEO({ path: '/' });
   const { visibleProducts } = useData();
   const featured = visibleProducts.filter(p => p.featured);
   const rest = visibleProducts.filter(p => !p.featured);

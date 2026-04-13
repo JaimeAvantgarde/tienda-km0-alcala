@@ -101,8 +101,8 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-oliva-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-oliva-300">
           <p>&copy; {new Date().getFullYear()} {siteConfig.fullName}. Todos los derechos reservados.</p>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-white transition-colors no-underline text-oliva-300">Política de Privacidad</a>
-            <a href="#" className="hover:text-white transition-colors no-underline text-oliva-300">Aviso Legal</a>
+            <Link to="/privacidad" className="hover:text-white transition-colors no-underline text-oliva-300">Privacidad</Link>
+            <Link to="/cookies" className="hover:text-white transition-colors no-underline text-oliva-300">Cookies</Link>
             <span className="text-oliva-300">Diseño web: <a href="https://www.linkedin.com/in/jaime-pareja-arco-760a71212/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors no-underline text-oliva-300">Jaime Pareja</a></span>
           </div>
         </div>
