@@ -1,4 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { useData } from './context/DataContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -26,9 +27,23 @@ function PublicLayout({ children }) {
   );
 }
 
+function AppLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-crema">
+      <div className="text-center">
+        <div className="w-10 h-10 border-4 border-oliva-400 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-tierra-600 text-sm">Cargando...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const { loading } = useData();
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+
+  if (loading) return <AppLoader />;
 
   return (
     <>

@@ -1,21 +1,22 @@
 import { useState, useRef } from 'react';
 import { useData } from '../../context/DataContext';
+import { supabase } from '../../lib/supabase';
 
 export default function ImagesAdmin() {
   const { images, addImage, deleteImage } = useData();
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileRef = useRef();
 
   const processFiles = (files) => {
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file) => {
       if (!file.type.startsWith('image/')) return;
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        // Resize image to max 800px
         const img = new Image();
-        img.onload = () => {
+        img.onload = async () => {
           const canvas = document.createElement('canvas');
           const maxSize = 800;
           let { width, height } = img;
@@ -30,10 +31,29 @@ export default function ImagesAdmin() {
           }
           canvas.width = width;
           canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const data = canvas.toDataURL('image/jpeg', 0.85);
-          addImage({ name: file.name, data });
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(async (blob) => {
+            setUploading(true);
+            const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+
+            const { error } = await supabase.storage
+              .from('km0-images')
+              .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+
+            if (error) {
+              console.error('Error subiendo imagen:', error);
+              setUploading(false);
+              return;
+            }
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('km0-images')
+              .getPublicUrl(fileName);
+
+            await addImage({ name: file.name, storageUrl: publicUrl, storagePath: fileName });
+            setUploading(false);
+          }, 'image/jpeg', 0.85);
         };
         img.src = e.target.result;
       };
@@ -65,11 +85,20 @@ export default function ImagesAdmin() {
         }`}
       >
         <input ref={fileRef} type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" />
-        <svg className="w-10 h-10 mx-auto mb-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <p className="text-gray-600 font-medium">Arrastra imágenes aquí o haz clic para seleccionar</p>
-        <p className="text-gray-400 text-sm mt-1">JPG, PNG, WebP. Se redimensionan automáticamente a máx. 800px.</p>
+        {uploading ? (
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-3 border-oliva-400 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-500 text-sm">Subiendo imagen...</p>
+          </div>
+        ) : (
+          <>
+            <svg className="w-10 h-10 mx-auto mb-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-gray-600 font-medium">Arrastra imágenes aquí o haz clic para seleccionar</p>
+            <p className="text-gray-400 text-sm mt-1">JPG, PNG, WebP. Se redimensionan automáticamente a máx. 800px.</p>
+          </>
+        )}
       </div>
 
       {/* Gallery */}
@@ -82,12 +111,11 @@ export default function ImagesAdmin() {
           {images.map(img => (
             <div key={img.id} className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="aspect-square">
-                <img src={img.data} alt={img.name} className="w-full h-full object-cover" />
+                <img src={img.url} alt={img.name} className="w-full h-full object-cover" />
               </div>
               <div className="p-2">
                 <p className="text-xs text-gray-500 truncate">{img.name}</p>
               </div>
-              {/* Delete overlay */}
               {confirmDelete === img.id ? (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2">
                   <button onClick={() => { deleteImage(img.id); setConfirmDelete(null); }} className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600">

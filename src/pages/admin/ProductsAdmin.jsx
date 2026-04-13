@@ -4,6 +4,7 @@ import { SortableContext, verticalListSortingStrategy, horizontalListSortingStra
 import { CSS } from '@dnd-kit/utilities';
 import { useData } from '../../context/DataContext';
 import ImageCropper from '../../components/admin/ImageCropper';
+import { supabase } from '../../lib/supabase';
 
 const emptyProduct = {
   name: '',
@@ -19,30 +20,16 @@ const emptyProduct = {
   featured: false,
 };
 
-function resizeAndUpload(file, addImage) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxSize = 1200;
-        let { width, height } = img;
-        if (width > maxSize || height > maxSize) {
-          if (width > height) { height = (height / width) * maxSize; width = maxSize; }
-          else { width = (width / height) * maxSize; height = maxSize; }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        const data = canvas.toDataURL('image/jpeg', 0.85);
-        const newImg = addImage({ name: file.name, data });
-        resolve(newImg.id);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
+async function uploadDataUrlToStorage(dataUrl, fileName) {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const storagePath = `${Date.now()}-${fileName.replace(/\s+/g, '-')}`;
+  const { error } = await supabase.storage
+    .from('km0-images')
+    .upload(storagePath, blob, { contentType: 'image/jpeg', upsert: false });
+  if (error) throw error;
+  const { data: { publicUrl } } = supabase.storage.from('km0-images').getPublicUrl(storagePath);
+  return { storageUrl: publicUrl, storagePath };
 }
 
 function SortablePhoto({ img, index, onRemove }) {
@@ -213,9 +200,14 @@ export default function ProductsAdmin() {
     });
   };
 
-  const handleCropSave = ({ name, data }) => {
-    const newImg = addImage({ name, data });
-    setForm(prev => ({ ...prev, imageIds: [...prev.imageIds, newImg.id] }));
+  const handleCropSave = async ({ name, data }) => {
+    try {
+      const { storageUrl, storagePath } = await uploadDataUrlToStorage(data, name);
+      const newImg = await addImage({ name, storageUrl, storagePath });
+      setForm(prev => ({ ...prev, imageIds: [...prev.imageIds, newImg.id] }));
+    } catch (err) {
+      console.error('Error subiendo imagen:', err);
+    }
     setCropQueue(prev => prev.slice(1));
   };
 
