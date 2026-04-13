@@ -9,6 +9,7 @@ import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/admin/LoginPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import ProductsAdmin from './pages/admin/ProductsAdmin';
@@ -38,12 +39,31 @@ function AppLoader() {
   );
 }
 
+function AppError() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-crema px-4">
+      <div className="text-center max-w-sm">
+        <p className="text-5xl mb-4">🫒</p>
+        <h2 className="font-serif text-2xl font-bold text-tierra-800 mb-2">No podemos cargar la tienda</h2>
+        <p className="text-tierra-500 text-sm mb-6">Hay un problema de conexión. Comprueba tu internet e inténtalo de nuevo.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-6 py-2.5 bg-oliva-500 hover:bg-oliva-600 text-white rounded-xl font-medium transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const { loading } = useData();
+  const { loading, dbError } = useData();
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
 
   if (loading) return <AppLoader />;
+  if (dbError) return <AppError />;
 
   return (
     <>
@@ -63,6 +83,7 @@ export default function App() {
           <Route path="/producto/:id" element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
           <Route path="/sobre-nosotros" element={<PublicLayout><AboutPage /></PublicLayout>} />
           <Route path="/contacto" element={<PublicLayout><ContactPage /></PublicLayout>} />
+          <Route path="*" element={<PublicLayout><NotFoundPage /></PublicLayout>} />
         </Routes>
       )}
     </>

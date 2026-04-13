@@ -61,27 +61,41 @@ export function DataProvider({ children }) {
     () => JSON.parse(localStorage.getItem('km0_auth') || 'false')
   );
   const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState(false);
 
   // ── Carga inicial ────────────────────────────────────────────────
   useEffect(() => {
     async function loadAll() {
-      const [
-        { data: cats },
-        { data: prods },
-        { data: imgs },
-        { data: config },
-      ] = await Promise.all([
-        supabase.from('categories').select('*').order('order'),
-        supabase.from('products').select('*').order('order'),
-        supabase.from('images').select('*').order('created_at'),
-        supabase.from('site_config').select('*').eq('id', 1).single(),
-      ]);
+      try {
+        const [
+          { data: cats, error: catsErr },
+          { data: prods, error: prodsErr },
+          { data: imgs, error: imgsErr },
+          { data: config, error: configErr },
+        ] = await Promise.all([
+          supabase.from('categories').select('*').order('order'),
+          supabase.from('products').select('*').order('order'),
+          supabase.from('images').select('*').order('created_at'),
+          supabase.from('site_config').select('*').eq('id', 1).single(),
+        ]);
 
-      setCategories((cats?.length ? cats : defaultCategories).map(categoryFromDB));
-      setProducts((prods?.length ? prods : defaultProducts).map(productFromDB));
-      setImages(imgs || []);
-      if (config?.data) setSiteConfig(config.data);
-      setLoading(false);
+        if (catsErr || prodsErr) {
+          console.error('Error cargando datos:', catsErr || prodsErr);
+          setDbError(true);
+          setLoading(false);
+          return;
+        }
+
+        setCategories((cats?.length ? cats : defaultCategories).map(categoryFromDB));
+        setProducts((prods?.length ? prods : defaultProducts).map(productFromDB));
+        setImages(imgs || []);
+        if (config?.data) setSiteConfig(config.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error de conexión:', err);
+        setDbError(true);
+        setLoading(false);
+      }
     }
     loadAll();
   }, []);
@@ -225,6 +239,7 @@ export function DataProvider({ children }) {
     images,
     isAuthenticated,
     loading,
+    dbError,
     login,
     logout,
     addProduct,
