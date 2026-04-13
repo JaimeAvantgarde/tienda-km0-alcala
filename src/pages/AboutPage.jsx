@@ -162,22 +162,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Imagen final con cita */}
-        <section className="pb-16 sm:pb-24">
-          <div className="rounded-2xl overflow-hidden shadow-lg relative">
-            <img
-              src="/mota-iglesia.jpg"
-              alt="Fortaleza de la Mota con la Iglesia Mayor Abacial"
-              className="w-full object-cover aspect-[21/9]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10">
-              <p className="font-serif text-2xl sm:text-3xl font-bold text-white max-w-2xl">
-                &ldquo;Lo bueno está cerca. Solo hay que saber dónde buscarlo.&rdquo;
-              </p>
-            </div>
-          </div>
-        </section>
 
       </div>
     </div>
