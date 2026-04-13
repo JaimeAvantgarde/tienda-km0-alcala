@@ -31,19 +31,26 @@ export default function Header() {
 
           {/* Nav desktop */}
           <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors no-underline ${
-                  location.pathname === link.to
-                    ? 'bg-oliva-50 text-oliva-700'
-                    : 'text-tierra-600 hover:bg-gray-50 hover:text-tierra-800'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map(link => {
+              const isActive = location.pathname === link.to;
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`relative px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors no-underline ${
+                    isActive
+                      ? 'text-oliva-700 bg-oliva-100'
+                      : 'text-tierra-600 hover:bg-gray-50 hover:text-tierra-800'
+                  }`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-oliva-600" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Hamburger */}
@@ -75,10 +82,11 @@ export default function Header() {
               key={link.to}
               to={link.to}
               onClick={() => setMenuOpen(false)}
-              className={`block px-4 py-3 rounded-lg text-sm font-semibold transition-colors no-underline ${
+              aria-current={location.pathname === link.to ? 'page' : undefined}
+              className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-colors no-underline ${
                 location.pathname === link.to
-                  ? 'bg-oliva-50 text-oliva-700'
-                  : 'text-tierra-600 hover:bg-gray-50'
+                  ? 'bg-oliva-100 text-oliva-700 border-l-4 border-oliva-600'
+                  : 'text-tierra-600 hover:bg-gray-50 border-l-4 border-transparent'
               }`}
             >
               {link.label}
