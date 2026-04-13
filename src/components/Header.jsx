@@ -40,7 +40,7 @@ export default function Header() {
                   aria-current={isActive ? 'page' : undefined}
                   className={`px-5 py-2.5 rounded-lg text-sm transition-colors no-underline ${
                     isActive
-                      ? 'text-oliva-700 bg-oliva-100 font-bold'
+                      ? 'bg-oliva-600 text-white font-bold'
                       : 'text-tierra-600 hover:bg-gray-50 hover:text-tierra-800 font-semibold'
                   }`}
                 >
