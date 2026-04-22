@@ -18,6 +18,7 @@ const emptyProduct = {
   tradition: '',
   visible: true,
   featured: false,
+  tags: [],
 };
 
 async function uploadDataUrlToStorage(dataUrl, fileName) {
@@ -162,9 +163,10 @@ function SortableRow(props) {
 }
 
 export default function ProductsAdmin() {
-  const { products, categories, images, addProduct, updateProduct, deleteProduct, reorderProducts, addImage, getImageById } = useData();
+  const { products, categories, images, addProduct, updateProduct, deleteProduct, reorderProducts, addImage, getImageById, getFiltersByCategory } = useData();
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyProduct);
+  const [tagInput, setTagInput] = useState('');
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -172,8 +174,16 @@ export default function ProductsAdmin() {
   const [cropQueue, setCropQueue] = useState([]);
   const fileRef = useRef();
 
-  const startCreate = () => { setForm(emptyProduct); setEditing('new'); };
-  const startEdit = (product) => { setForm({ ...product }); setEditing(product.id); };
+  const startCreate = () => { setForm(emptyProduct); setTagInput(''); setEditing('new'); };
+  const startEdit = (product) => { setForm({ ...product, tags: product.tags || [] }); setTagInput(''); setEditing(product.id); };
+
+  const addTag = () => {
+    const newTag = tagInput.trim();
+    if (newTag && !(form.tags || []).includes(newTag)) {
+      setForm(prev => ({ ...prev, tags: [...(prev.tags || []), newTag] }));
+    }
+    setTagInput('');
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -304,12 +314,45 @@ export default function ProductsAdmin() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-            <select required value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-terracota-400">
+            <select
+              required
+              value={form.categoryId}
+              onChange={e => setForm({ ...form, categoryId: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-terracota-400"
+            >
               <option value="">Seleccionar categoría</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
+
+          {/* Filtros predefinidos de la categoría */}
+          {form.categoryId && getFiltersByCategory(form.categoryId).length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filtros</label>
+              <div className="flex flex-wrap gap-3">
+                {getFiltersByCategory(form.categoryId).map(filter => {
+                  const isChecked = (form.tags || []).includes(filter.name);
+                  return (
+                    <label key={filter.id} className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setForm(prev => ({ ...prev, tags: [...(prev.tags || []), filter.name] }));
+                          } else {
+                            setForm(prev => ({ ...prev, tags: (prev.tags || []).filter(t => t !== filter.name) }));
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-terracota-500 focus:ring-terracota-400"
+                      />
+                      <span className="text-sm text-gray-700">{filter.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Precio (&euro;) *</label>
@@ -356,6 +399,44 @@ export default function ProductsAdmin() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Tradición / Curiosidades</label>
             <textarea rows={3} value={form.tradition} onChange={e => setForm({ ...form, tradition: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-terracota-400 resize-none" />
+          </div>
+
+          {/* Etiquetas */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Etiquetas</label>
+            {(form.tags || []).length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {(form.tags || []).map(tag => (
+                  <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-oliva-100 text-oliva-800 text-sm rounded-full">
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
+                      className="ml-0.5 text-oliva-600 hover:text-red-500 leading-none"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                placeholder="Ej: Primera Cosecha, Variedad Picual…"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-terracota-400 text-sm"
+              />
+              <button
+                type="button"
+                onClick={addTag}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+              >
+                Añadir
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-6">

@@ -5,7 +5,10 @@ import ImageCropper from '../../components/admin/ImageCropper';
 const emptyCategory = { name: '', description: '', icon: '', gradient: '', order: 1, imageId: null };
 
 export default function CategoriesAdmin() {
-  const { categories, products, addImage, addCategory, updateCategory, deleteCategory, getImageById } = useData();
+  const {
+    categories, products, addImage, addCategory, updateCategory, deleteCategory, getImageById,
+    getFiltersByCategory, addCategoryFilter, updateCategoryFilter, deleteCategoryFilter,
+  } = useData();
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyCategory);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -13,8 +16,23 @@ export default function CategoriesAdmin() {
   const [cropData, setCropData] = useState(null);
   const fileRef = useRef();
 
-  const startCreate = () => { setForm({ ...emptyCategory, order: categories.length + 1 }); setEditing('new'); };
-  const startEdit = (cat) => { setForm({ ...cat }); setEditing(cat.id); };
+  // Estado para gestión de filtros
+  const [newFilterName, setNewFilterName] = useState('');
+  const [editingFilter, setEditingFilter] = useState(null); // { id, name }
+  const [confirmDeleteFilter, setConfirmDeleteFilter] = useState(null);
+
+  const startCreate = () => {
+    setForm({ ...emptyCategory, order: categories.length + 1 });
+    setNewFilterName('');
+    setEditingFilter(null);
+    setEditing('new');
+  };
+  const startEdit = (cat) => {
+    setForm({ ...cat });
+    setNewFilterName('');
+    setEditingFilter(null);
+    setEditing(cat.id);
+  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -141,6 +159,131 @@ export default function CategoriesAdmin() {
             </button>
           </div>
         </form>
+
+        {/* Sección de filtros especiales (solo al editar una categoría existente) */}
+        {editing !== 'new' && (
+          <div className="mt-10 border-t border-gray-200 pt-8">
+            <h3 className="text-base font-semibold text-gray-800 mb-1">Filtros Especiales</h3>
+            <p className="text-sm text-gray-500 mb-5">
+              Los filtros permiten a los clientes encontrar productos específicos dentro de esta categoría. Puedes añadir, renombrar y eliminar filtros libremente.
+            </p>
+
+            {/* Lista de filtros existentes */}
+            {getFiltersByCategory(editing).length > 0 ? (
+              <ul className="space-y-2 mb-5">
+                {getFiltersByCategory(editing).map((f, idx) => (
+                  <li key={f.id} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <span className="text-xs font-mono text-gray-400 w-5 text-right">{idx + 1}.</span>
+                    {editingFilter?.id === f.id ? (
+                      <>
+                        <input
+                          autoFocus
+                          value={editingFilter.name}
+                          onChange={e => setEditingFilter({ ...editingFilter, name: e.target.value })}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (editingFilter.name.trim()) {
+                                updateCategoryFilter(f.id, { name: editingFilter.name.trim() });
+                              }
+                              setEditingFilter(null);
+                            }
+                            if (e.key === 'Escape') setEditingFilter(null);
+                          }}
+                          className="flex-1 px-2 py-1 border border-terracota-400 rounded focus:outline-none focus:ring-1 focus:ring-terracota-400 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editingFilter.name.trim()) {
+                              updateCategoryFilter(f.id, { name: editingFilter.name.trim() });
+                            }
+                            setEditingFilter(null);
+                          }}
+                          className="px-3 py-1 text-xs bg-oliva-500 hover:bg-oliva-600 text-white rounded font-medium"
+                        >
+                          OK
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingFilter(null)}
+                          className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 rounded font-medium"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-sm text-gray-800">{f.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingFilter({ id: f.id, name: f.name })}
+                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Renombrar"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        {confirmDeleteFilter === f.id ? (
+                          <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => { deleteCategoryFilter(f.id); setConfirmDeleteFilter(null); }} className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Sí</button>
+                            <button type="button" onClick={() => setConfirmDeleteFilter(null)} className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">No</button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteFilter(f.id)}
+                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Eliminar filtro"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-400 italic mb-5">Sin filtros todavía. Añade el primero abajo.</p>
+            )}
+
+            {/* Añadir nuevo filtro */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newFilterName}
+                onChange={e => setNewFilterName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (newFilterName.trim()) {
+                      addCategoryFilter({ category_id: editing, name: newFilterName.trim() });
+                      setNewFilterName('');
+                    }
+                  }
+                }}
+                placeholder="Ej: Cosecha Temprana, Variedad Picual…"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-terracota-400 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newFilterName.trim()) {
+                    addCategoryFilter({ category_id: editing, name: newFilterName.trim() });
+                    setNewFilterName('');
+                  }
+                }}
+                className="px-4 py-2 bg-oliva-500 hover:bg-oliva-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                + Añadir
+              </button>
+            </div>
+          </div>
+        )}
 
         {cropData && (
           <ImageCropper

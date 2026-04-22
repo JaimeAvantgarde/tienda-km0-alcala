@@ -12,6 +12,7 @@ function productFromDB(p) {
     longDescription: p.long_description ?? p.longDescription ?? '',
     categoryId: p.category_id ?? p.categoryId ?? '',
     imageIds: p.image_ids ?? p.imageIds ?? [],
+    tags: p.tags ?? [],
   };
 }
 
@@ -29,6 +30,7 @@ function productToDB(p) {
     tradition: p.tradition ?? '',
     visible: p.visible ?? true,
     featured: p.featured ?? false,
+    tags: p.tags ?? [],
     order: p.order ?? 0,
   };
 }
@@ -55,6 +57,7 @@ function categoryToDB(c) {
 export function DataProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [categoryFilters, setCategoryFilters] = useState([]);
   const [siteConfig, setSiteConfig] = useState(defaultSiteConfig);
   const [images, setImages] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -72,11 +75,13 @@ export function DataProvider({ children }) {
           { data: prods, error: prodsErr },
           { data: imgs, error: imgsErr },
           { data: config, error: configErr },
+          { data: filters },
         ] = await Promise.all([
           supabase.from('categories').select('*').order('order'),
           supabase.from('products').select('*').order('order'),
           supabase.from('images').select('*').order('created_at'),
           supabase.from('site_config').select('*').eq('id', 1).single(),
+          supabase.from('category_filters').select('*').order('order'),
         ]);
 
         if (catsErr || prodsErr) {
@@ -89,6 +94,7 @@ export function DataProvider({ children }) {
         setCategories((cats?.length ? cats : defaultCategories).map(categoryFromDB));
         setProducts((prods?.length ? prods : defaultProducts).map(productFromDB));
         setImages(imgs || []);
+        setCategoryFilters(filters || []);
         if (config?.data) setSiteConfig(config.data);
         setLoading(false);
       } catch (err) {
@@ -172,6 +178,37 @@ export function DataProvider({ children }) {
     setCategories(prev => prev.filter(c => c.id !== id));
   }, []);
 
+  // ── Category Filters ─────────────────────────────────────────────
+  const addCategoryFilter = useCallback(async (filter) => {
+    const catFilters = categoryFilters.filter(f => f.category_id === filter.category_id);
+    const newFilter = {
+      id: 'filter_' + Date.now(),
+      category_id: filter.category_id,
+      name: filter.name,
+      order: catFilters.length,
+      created_at: new Date().toISOString(),
+    };
+    await supabase.from('category_filters').insert(newFilter);
+    setCategoryFilters(prev => [...prev, newFilter]);
+    return newFilter;
+  }, [categoryFilters]);
+
+  const updateCategoryFilter = useCallback(async (id, updates) => {
+    await supabase.from('category_filters').update(updates).eq('id', id);
+    setCategoryFilters(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+  }, []);
+
+  const deleteCategoryFilter = useCallback(async (id) => {
+    await supabase.from('category_filters').delete().eq('id', id);
+    setCategoryFilters(prev => prev.filter(f => f.id !== id));
+  }, []);
+
+  const getFiltersByCategory = useCallback((categoryId) =>
+    [...categoryFilters]
+      .filter(f => f.category_id === categoryId)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+  [categoryFilters]);
+
   // ── Images ───────────────────────────────────────────────────────
   const addImage = useCallback(async ({ name, storageUrl, storagePath }) => {
     const newImg = {
@@ -235,6 +272,7 @@ export function DataProvider({ children }) {
     visibleProducts,
     categories: sortedCategories,
     allCategories: categories,
+    categoryFilters,
     siteConfig,
     images,
     isAuthenticated,
@@ -249,6 +287,10 @@ export function DataProvider({ children }) {
     addCategory,
     updateCategory,
     deleteCategory,
+    addCategoryFilter,
+    updateCategoryFilter,
+    deleteCategoryFilter,
+    getFiltersByCategory,
     addImage,
     deleteImage,
     updateSiteConfig,

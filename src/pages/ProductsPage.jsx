@@ -5,7 +5,7 @@ import { useSEO } from '../hooks/useSEO';
 import ProductCard from '../components/ProductCard';
 
 export default function ProductsPage() {
-  const { visibleProducts, categories } = useData();
+  const { visibleProducts, categories, categoryFilters } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get('categoria') || 'all';
   const activeCategoryObj = categories.find(c => c.id === activeCategory);
@@ -17,11 +17,43 @@ export default function ProductsPage() {
     path: '/productos',
   });
   const [search, setSearch] = useState('');
+  const [activeTag, setActiveTag] = useState('');
+
+  const setCategory = (catId) => {
+    setActiveTag('');
+    setSearchParams(catId === 'all' ? {} : { categoria: catId });
+  };
+
+  // Filtros predefinidos de la categoría activa (gestionados desde el admin)
+  const predefinedFilters = useMemo(() => {
+    if (activeCategory === 'all') return [];
+    return [...categoryFilters]
+      .filter(f => f.category_id === activeCategory)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }, [categoryFilters, activeCategory]);
+
+  // Tags libres de productos (solo para categorías sin filtros predefinidos)
+  const availableTags = useMemo(() => {
+    if (activeCategory === 'all' || predefinedFilters.length > 0) return [];
+    const tags = new Set();
+    visibleProducts
+      .filter(p => p.categoryId === activeCategory)
+      .forEach(p => (p.tags || []).forEach(t => tags.add(t)));
+    return [...tags].sort();
+  }, [visibleProducts, activeCategory, predefinedFilters]);
+
+  // Unión de filtros a mostrar: predefinidos primero, luego tags libres
+  const displayFilters = predefinedFilters.length > 0
+    ? predefinedFilters.map(f => f.name)
+    : availableTags;
 
   const filtered = useMemo(() => {
     let result = visibleProducts;
     if (activeCategory !== 'all') {
       result = result.filter(p => p.categoryId === activeCategory);
+    }
+    if (activeTag) {
+      result = result.filter(p => (p.tags || []).includes(activeTag));
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -31,7 +63,7 @@ export default function ProductsPage() {
       );
     }
     return result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-  }, [visibleProducts, activeCategory, search]);
+  }, [visibleProducts, activeCategory, activeTag, search]);
 
   return (
     <div className="min-h-screen bg-crema">
@@ -65,9 +97,9 @@ export default function ProductsPage() {
         </div>
 
         {/* Category filters */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-4">
           <button
-            onClick={() => setSearchParams({})}
+            onClick={() => setCategory('all')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeCategory === 'all'
                 ? 'bg-oliva-500 text-white'
@@ -79,7 +111,7 @@ export default function ProductsPage() {
           {categories.map(cat => (
             <button
               key={cat.id}
-              onClick={() => setSearchParams({ categoria: cat.id })}
+              onClick={() => setCategory(cat.id)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat.id
                   ? 'bg-oliva-500 text-white'
@@ -90,6 +122,27 @@ export default function ProductsPage() {
             </button>
           ))}
         </div>
+
+        {/* Filtros de categoría (predefinidos o tags libres) */}
+        {displayFilters.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8 pl-1">
+            <span className="text-xs text-tierra-400 self-center mr-1">Filtrar:</span>
+            {displayFilters.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setActiveTag(activeTag === tag ? '' : tag)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  activeTag === tag
+                    ? 'bg-terracota-500 text-white'
+                    : 'bg-white text-tierra-600 hover:bg-tierra-100 border border-tierra-200'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+        {displayFilters.length === 0 && <div className="mb-8" />}
 
         {/* Products grid */}
         {filtered.length > 0 ? (

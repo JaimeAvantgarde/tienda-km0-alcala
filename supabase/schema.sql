@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS products (
   origin TEXT DEFAULT '',
   tradition TEXT DEFAULT '',
   visible BOOLEAN DEFAULT true,
+  featured BOOLEAN DEFAULT false,
+  tags TEXT[] DEFAULT '{}',
   "order" INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -43,11 +45,21 @@ CREATE TABLE IF NOT EXISTS site_config (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- CATEGORY_FILTERS (filtros predefinidos por categoría, editables desde el admin)
+CREATE TABLE IF NOT EXISTS category_filters (
+  id TEXT PRIMARY KEY,
+  category_id TEXT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  "order" INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- RLS
 ALTER TABLE images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE category_filters ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "public_read_images"     ON images      FOR SELECT USING (true);
 CREATE POLICY "anon_write_images"      ON images      FOR ALL    USING (true) WITH CHECK (true);
@@ -55,8 +67,10 @@ CREATE POLICY "public_read_categories" ON categories  FOR SELECT USING (true);
 CREATE POLICY "anon_write_categories"  ON categories  FOR ALL    USING (true) WITH CHECK (true);
 CREATE POLICY "public_read_products"   ON products    FOR SELECT USING (true);
 CREATE POLICY "anon_write_products"    ON products    FOR ALL    USING (true) WITH CHECK (true);
-CREATE POLICY "public_read_config"     ON site_config FOR SELECT USING (true);
-CREATE POLICY "anon_write_config"      ON site_config FOR ALL    USING (true) WITH CHECK (true);
+CREATE POLICY "public_read_config"     ON site_config       FOR SELECT USING (true);
+CREATE POLICY "anon_write_config"      ON site_config       FOR ALL    USING (true) WITH CHECK (true);
+CREATE POLICY "public_read_catfilters" ON category_filters  FOR SELECT USING (true);
+CREATE POLICY "anon_write_catfilters"  ON category_filters  FOR ALL    USING (true) WITH CHECK (true);
 
 -- SEED: Site config inicial
 INSERT INTO site_config (id, data) VALUES (1, '{
@@ -103,3 +117,13 @@ INSERT INTO products (id, name, short_description, long_description, category_id
   ('prod_11', 'Mermelada de Higo',           'Mermelada artesanal de higos maduros recogidos a mano.',                             'Mermelada elaborada con higos maduros de las higueras de la zona.',                                                                'cat_conservas', '{}',  4.75, 'Conservas Artesanas del Sur',    'Sierra Sur de Jaén',    'La elaboración de mermeladas ha sido históricamente una forma de conservar la fruta.', true, 10),
   ('prod_12', 'Mistela Artesanal',           'Licor dulce tradicional elaborado con mosto de uva y aguardiente.',                  'La mistela es un licor dulce típico de la zona, elaborado mezclando mosto fresco de uva con aguardiente de orujo.',               'cat_vinos',     '{}', 10.50, 'Bodega Artesanal La Fortaleza', 'Alcalá la Real, Jaén',  'La elaboración de mistela es una costumbre ancestral en los pueblos de la Sierra Sur.', true, 11)
 ON CONFLICT (id) DO NOTHING;
+
+-- SEED: Filtros predefinidos para aceite de oliva
+INSERT INTO category_filters (id, category_id, name, "order") VALUES
+  ('filter_aceite_1', 'cat_aceite', 'Cosecha Temprana', 0),
+  ('filter_aceite_2', 'cat_aceite', 'Cosecha Normal',   1)
+ON CONFLICT (id) DO NOTHING;
+
+-- Asignar filtros a los aceites existentes (solo si aún no tienen tags)
+UPDATE products SET tags = ARRAY['Cosecha Normal']   WHERE id = 'prod_1' AND array_length(tags, 1) IS NULL;
+UPDATE products SET tags = ARRAY['Cosecha Temprana'] WHERE id = 'prod_2' AND array_length(tags, 1) IS NULL;
