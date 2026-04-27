@@ -1,6 +1,19 @@
 import { useState, useRef } from 'react';
 import { useData } from '../../context/DataContext';
 import ImageCropper from '../../components/admin/ImageCropper';
+import { supabase } from '../../lib/supabase';
+
+async function uploadDataUrlToStorage(dataUrl, fileName) {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const storagePath = `${Date.now()}-${fileName.replace(/\s+/g, '-')}`;
+  const { error } = await supabase.storage
+    .from('km0-images')
+    .upload(storagePath, blob, { contentType: 'image/jpeg', upsert: false });
+  if (error) throw error;
+  const { data: { publicUrl } } = supabase.storage.from('km0-images').getPublicUrl(storagePath);
+  return { storageUrl: publicUrl, storagePath };
+}
 
 const emptyCategory = { name: '', description: '', icon: '', gradient: '', order: 1, imageId: null };
 
@@ -70,9 +83,15 @@ export default function CategoriesAdmin() {
     e.target.value = '';
   };
 
-  const handleCropSave = ({ name, data }) => {
-    const newImg = addImage({ name, data });
-    setForm(prev => ({ ...prev, imageId: newImg.id }));
+  const handleCropSave = async ({ name, data }) => {
+    try {
+      const { storageUrl, storagePath } = await uploadDataUrlToStorage(data, name);
+      const newImg = await addImage({ name, storageUrl, storagePath });
+      setForm(prev => ({ ...prev, imageId: newImg.id }));
+    } catch (err) {
+      alert('Error al subir la foto. Inténtalo de nuevo.');
+      console.error(err);
+    }
     setCropData(null);
   };
 
@@ -102,7 +121,7 @@ export default function CategoriesAdmin() {
             <div className="flex gap-3 flex-wrap">
               {currentImage && (
                 <div className="relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200">
-                  <img src={currentImage.data} alt="Foto categoría" className="w-full h-full object-cover" />
+                  <img src={currentImage.url} alt="Foto categoría" className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => setForm({ ...form, imageId: null })}
@@ -315,7 +334,7 @@ export default function CategoriesAdmin() {
             <div key={cat.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
                 {catImage ? (
-                  <img src={catImage.data} alt={cat.name} className="w-full h-full object-cover" />
+                  <img src={catImage.url} alt={cat.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-center text-gray-400">
                     <svg className="w-8 h-8 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
