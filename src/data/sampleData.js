@@ -68,6 +68,7 @@ export const defaultProducts = [
     origin: 'Alcalá la Real, Jaén',
     tradition: 'La producción de aceite en Alcalá la Real se remonta a la época romana. Los olivares de la Sierra Sur han sido testigos de siglos de historia y tradición oleícola.',
     visible: true,
+    tags: ['Variedad Picual'],
   },
   {
     id: 'prod_2',
@@ -81,6 +82,7 @@ export const defaultProducts = [
     origin: 'Alcalá la Real, Jaén',
     tradition: 'La almazara El Castillo lleva tres generaciones produciendo aceite con métodos tradicionales actualizados.',
     visible: true,
+    tags: ['Primera Cosecha', 'Variedad Hojiblanca'],
   },
   {
     id: 'prod_3',

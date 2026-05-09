@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 
 export default function AboutPage() {
@@ -145,18 +146,18 @@ export default function AboutPage() {
                 o WhatsApp.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <a
-                  href="/contacto"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-oliva-500 hover:bg-oliva-600 text-white rounded-xl font-medium transition-colors"
+                <Link
+                  to="/contacto"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-oliva-500 hover:bg-oliva-600 text-white rounded-xl font-medium transition-colors no-underline"
                 >
                   Contactar
-                </a>
-                <a
-                  href="/productos"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-tierra-700 border border-tierra-200 rounded-xl font-medium transition-colors"
+                </Link>
+                <Link
+                  to="/productos"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-tierra-700 border border-tierra-200 rounded-xl font-medium transition-colors no-underline"
                 >
                   Ver productos
-                </a>
+                </Link>
               </div>
             </div>
             <div className="lg:order-1 rounded-2xl overflow-hidden shadow-lg">
