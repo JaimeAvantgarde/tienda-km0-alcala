@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { useSEO } from '../hooks/useSEO';
 import { useData } from '../context/DataContext';
@@ -6,6 +6,8 @@ import ProductCard from '../components/ProductCard';
 
 function ProductGallery({ images, name }) {
   const [current, setCurrent] = useState(0);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
 
   if (images.length === 0) {
     return (
@@ -22,11 +24,37 @@ function ProductGallery({ images, name }) {
   const prev = () => setCurrent(c => (c === 0 ? images.length - 1 : c - 1));
   const next = () => setCurrent(c => (c === images.length - 1 ? 0 : c + 1));
 
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) next();
+      else prev();
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
   return (
     <div>
       {/* Imagen principal */}
-      <div className="relative rounded-2xl overflow-hidden aspect-square group bg-gray-50">
-        <img src={images[current].data} alt={`${name} ${current + 1}`} className="w-full h-full object-contain" />
+      <div
+        className="relative rounded-2xl overflow-hidden aspect-square group bg-gray-50 touch-pan-y select-none"
+        onTouchStart={images.length > 1 ? handleTouchStart : undefined}
+        onTouchEnd={images.length > 1 ? handleTouchEnd : undefined}
+      >
+        <img
+          src={images[current].data}
+          alt={`${name} ${current + 1}`}
+          className="w-full h-full object-contain pointer-events-none"
+          draggable={false}
+        />
 
         {images.length > 1 && (
           <>
